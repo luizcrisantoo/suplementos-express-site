@@ -1,59 +1,66 @@
-# O que mudou nesta rodada
+# Rodada 2: busca e prazo de entrega no produto
 
-## 1. Hero menor
-A primeira dobra agora mostra produto, não banner. A hero caiu de ~360px para
-~230px no desktop e ganhou uma faixa de garantias (entrega hoje / frete grátis /
-Pix ou cartão / 100% original) no lugar do espaço vazio.
+## 1. Busca no cabeçalho
+Campo de busca no topo de todas as páginas. É um `<form>` GET de verdade, então
+funciona sem JavaScript e o resultado tem URL própria (`/busca?q=whey`), dá para
+mandar link no WhatsApp.
 
-## 2. Fotos padronizadas
-As 756 fotos vinham da NE com proporções e margens diferentes (300x300, 300x405,
-500x500, 800x800), então no grid um pote parecia o dobro do outro. Todas foram
-recortadas, centralizadas num quadrado e ajustadas para o produto ocupar sempre
-86% do quadro. Nenhum pixel foi ampliado: o quadrado é derivado do próprio
-recorte. `public/produtos/` já está com as fotos novas.
+- **sem acento**: "proteina" acha "proteína", e vice-versa
+- **várias palavras**: "whey chocolate" só traz quem tem as duas coisas
+- **acha pelo sabor do irmão**: procurar "chocolate" traz a linha Best Whey
+  inteira, porque a busca olha o texto de todos os SKUs do grupo
+- **acha por marca, categoria e tamanho** também
+- quando não acha nada, oferece perguntar no WhatsApp com o termo já na mensagem
 
-## 3. Variações de sabor e tamanho
-Antes, cada sabor era um produto solto: o Best Whey ocupava 18 cards seguidos na
-categoria Proteína. Agora os SKUs da mesma linha são agrupados:
+O cabeçalho foi reorganizado: logo, busca e carrinho na primeira linha, e as
+categorias passaram para uma faixa própria embaixo. No celular a busca desce
+para a segunda linha, em largura cheia.
 
-- as listagens (home, categoria) leem a view `vitrine`, uma linha por grupo
-- o card mostra o nome limpo ("Best Whey"), o selo "18 opções" e "a partir de"
-- a página do produto ganhou chips de **Tamanho** e **Sabor**
+## 2. "Chega hoje?" na página do produto
+Antes o cliente só descobria o frete depois de montar o carrinho inteiro. Agora
+tem um campo de CEP na própria página do produto, mostrando o prazo, o bairro e
+quanto falta para o frete sair de graça.
 
-761 SKUs viraram **317 grupos**, sendo 165 com variação.
-
-Cada variação continua sendo um SKU com URL própria, então trocar o sabor é uma
-navegação de verdade (bom para SEO e para mandar link no WhatsApp).
-
-## 4. WhatsApp
-Botão flutuante em todas as páginas, link no rodapé e "Tirar uma dúvida no
-WhatsApp" na página do produto, com o nome do produto já preenchido na mensagem.
-Número: 5581998080009 (`src/lib/contato.ts`).
+O CEP fica lembrado por 12h no navegador dele, então a partir do segundo produto
+a resposta já aparece pronta, sem nova consulta.
 
 ---
 
-# O ÚNICO PASSO MANUAL
+# O QUE VOCÊ PRECISA FAZER
 
-O site novo depende de três colunas e uma view que ainda não existem no banco.
-No painel do Supabase → SQL Editor → cole e rode:
+## Passo 1 - migração do banco
 
-    supabase/migracao-01-variacoes.sql
+A busca depende de uma coluna nova (`busca`) e de uma versão nova da view
+`vitrine`. Copia o SQL:
 
-Pode rodar mais de uma vez sem quebrar nada. No fim ele imprime uma conferência:
+    cd "$env:USERPROFILE\OneDrive\Área de Trabalho\suplementos-express\app"
+    Get-Content .\supabase\migracao-02-busca.sql -Raw | Set-Clipboard
 
-    produtos ativos        760
-    grupos                 317
-    grupos com variacao    165
-    sem grupo              0
+Cola no SQL Editor do Supabase e roda. No fim ele imprime:
+
+    sem texto de busca     0
+    acha "proteina"        (um número > 100)
+    acha "creatina"        (um número > 10)
+    acha "chocolate"       (um número > 40)
     custo exposto?         OK
 
-Se "custo exposto?" vier FALHOU, me chama antes de subir.
+Se "sem texto de busca" vier diferente de 0, ou "custo exposto?" vier FALHOU,
+me chama antes de subir.
 
-**Rode a migração ANTES do deploy.** Se o site novo subir antes, as listagens
-ficam vazias (a view `vitrine` ainda não existe).
+**Roda a migração ANTES do deploy.** Se o código novo subir primeiro, toda busca
+dá erro, porque a coluna `busca` ainda não existe na view.
 
-Depois:
+## Passo 2 - subir
 
+    npm run build
     git add -A
-    git commit -m "Hero menor, fotos padronizadas, variacoes de sabor e tamanho"
+    git commit -m "Busca no cabecalho e consulta de entrega na pagina do produto"
     git push
+
+---
+
+# Ainda parado
+
+O checkout continua sem conseguir receber pedido: exige login por SMS (Twilio
+não configurado) e o Mercado Pago não tem credencial no ambiente. Enquanto isso
+não for resolvido, quem quiser comprar tem que cair no WhatsApp.

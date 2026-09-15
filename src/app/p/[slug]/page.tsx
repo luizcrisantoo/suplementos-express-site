@@ -5,6 +5,7 @@ import { supabaseServidor } from '@/lib/supabase-server';
 import { brl } from '@/lib/dinheiro';
 import BotaoComprar from '@/components/BotaoComprar';
 import SeletorVariacao from '@/components/SeletorVariacao';
+import EntregaProduto from '@/components/EntregaProduto';
 import { linkWhatsapp } from '@/lib/contato';
 import { COLUNAS_VARIACAO, nomeLinha, nomeCompleto, type Variacao } from '@/lib/produto';
 
@@ -108,6 +109,8 @@ export default async function PaginaProduto({ params }: { params: Promise<{ slug
               ? 'Pronta entrega: pediu até 16h, recebe hoje'
               : 'Sob encomenda: chega em até 24h'}
           </p>
+
+          <EntregaProduto precoCents={p.preco_venda_cents} />
 
           <BotaoComprar produto={{
             id: p.id, slug: p.slug, nome: completo,
