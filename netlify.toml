@@ -1,17 +1,25 @@
 # Deploy do Next.js na Netlify.
-# O plugin oficial cuida das rotas de servidor, das funcoes e do cache.
+#
+# Nao declare `publish` aqui: o Next.js Runtime da Netlify define a pasta de
+# publicacao sozinho. Forcar `.next` faz a etapa de Deploying falhar, porque ele
+# tenta subir arquivos de servidor como se fossem estaticos.
+#
+# O plugin tambem nao precisa ser declarado: a Netlify detecta o Next e instala.
+
 [build]
   command = "npm run build"
-  publish = ".next"
-
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
 
 [build.environment]
   NODE_VERSION = "20"
 
-# O webhook do Mercado Pago precisa chegar sem redirecionamento.
+# O webhook do Mercado Pago precisa chegar sem cache.
 [[headers]]
   for = "/api/*"
   [headers.values]
     Cache-Control = "no-store"
+
+# As fotos de produto nao mudam: cache longo economiza banda.
+[[headers]]
+  for = "/produtos/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
