@@ -2,15 +2,14 @@ import Link from 'next/link';
 import { supabaseServidor } from '@/lib/supabase-server';
 import CardProduto from '@/components/CardProduto';
 import { COLUNAS_VITRINE, type ItemVitrine } from '@/lib/produto';
+import { CATEGORIAS, DESTAQUES } from '@/lib/categorias';
 import { linkWhatsapp, MSG_PADRAO } from '@/lib/contato';
 
 export const revalidate = 300;
 
-const VITRINES = [
-  { cat: 'proteina', titulo: 'Proteína' },
-  { cat: 'creatina', titulo: 'Creatina' },
-  { cat: 'pre-treino', titulo: 'Pré-treino' },
-];
+/** Prateleiras da home. O resto do catalogo entra pela faixa de categorias. */
+const VITRINES = ['proteina', 'barrinhas-e-snacks', 'pre-treino',
+                  'creatina', 'vitamina-mineral', 'hipercalorico'] as const;
 
 const GARANTIAS = [
   ['Entrega hoje', 'Pedidos até 16h'],
@@ -22,13 +21,14 @@ const GARANTIAS = [
 export default async function Home() {
   const sb = await supabaseServidor();
   const blocos = await Promise.all(
-    VITRINES.map(async v => {
+    VITRINES.map(async slug => {
       const { data } = await sb.from('vitrine')
         .select(COLUNAS_VITRINE)
-        .eq('categoria', v.cat)
+        .eq('categoria', slug)
         .order('preco_venda_cents', { ascending: false })
         .limit(8);
-      return { ...v, itens: (data ?? []) as unknown as ItemVitrine[] };
+      const cat = CATEGORIAS.find(c => c.slug === slug)!;
+      return { slug, titulo: cat.nome, itens: (data ?? []) as unknown as ItemVitrine[] };
     }),
   );
 
@@ -53,7 +53,7 @@ export default async function Home() {
 
           <div className="flex flex-wrap gap-3">
             <Link
-              href="/c/proteina"
+              href="/categorias"
               className="rounded-lg bg-ouro px-5 py-3 font-display text-sm font-bold text-tinta"
             >
               Ver o catálogo
@@ -79,11 +79,36 @@ export default async function Home() {
         </ul>
       </section>
 
-      {blocos.map(b => (
-        <section key={b.cat} className="mx-auto max-w-6xl px-4 py-8">
+      {/* Atalho para as categorias: sem isso, metade do catalogo so aparecia
+          para quem soubesse o endereco de cor. */}
+      <nav aria-label="Categorias em destaque" className="mx-auto max-w-6xl px-4 pt-8">
+        <ul className="flex flex-wrap gap-2">
+          {DESTAQUES.map(c => (
+            <li key={c.slug}>
+              <Link
+                href={`/c/${c.slug}`}
+                className="inline-block rounded-full border border-neve-200 px-4 py-2 text-sm font-semibold transition-colors hover:border-tinta hover:bg-tinta hover:text-neve"
+              >
+                {c.curto}
+              </Link>
+            </li>
+          ))}
+          <li>
+            <Link
+              href="/categorias"
+              className="inline-block rounded-full bg-ouro px-4 py-2 text-sm font-bold text-tinta"
+            >
+              Todas as categorias
+            </Link>
+          </li>
+        </ul>
+      </nav>
+
+      {blocos.map(b => b.itens.length > 0 && (
+        <section key={b.slug} className="mx-auto max-w-6xl px-4 py-8">
           <div className="mb-4 flex items-baseline justify-between">
             <h2 className="font-display text-2xl font-extrabold">{b.titulo}</h2>
-            <Link href={`/c/${b.cat}`} className="text-sm font-semibold underline hover:text-ouro-700">
+            <Link href={`/c/${b.slug}`} className="text-sm font-semibold underline hover:text-ouro-700">
               ver tudo
             </Link>
           </div>
@@ -92,6 +117,15 @@ export default async function Home() {
           </div>
         </section>
       ))}
+
+      <div className="mx-auto max-w-6xl px-4 pb-4 text-center">
+        <Link
+          href="/categorias"
+          className="inline-block rounded-lg border border-tinta px-6 py-3 font-display font-bold transition-colors hover:bg-tinta hover:text-neve"
+        >
+          Ver as 20 categorias
+        </Link>
+      </div>
     </>
   );
 }

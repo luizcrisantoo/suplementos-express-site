@@ -35,7 +35,7 @@ export default function GavetaCarrinho() {
         {linhas.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
             <p className="text-neve-600">Seu carrinho está vazio.</p>
-            <Link href="/c/proteina" onClick={fechar}
+            <Link href="/categorias" onClick={fechar}
                   className="rounded-lg bg-tinta px-5 py-2.5 font-semibold text-neve">Ver produtos</Link>
           </div>
         ) : (

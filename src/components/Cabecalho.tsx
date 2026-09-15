@@ -4,12 +4,9 @@ import { Suspense } from 'react';
 import Logo from './Logo';
 import CampoBusca from './CampoBusca';
 import { useCarrinho } from './CarrinhoProvider';
+import { DESTAQUES } from '@/lib/categorias';
 
-const CATEGORIAS = [
-  ['proteina', 'Proteína'], ['creatina', 'Creatina'], ['pre-treino', 'Pré-treino'],
-  ['hipercalorico', 'Hipercalórico'], ['barrinhas-e-snacks', 'Snacks'],
-  ['vitamina-mineral', 'Vitaminas'], ['termogenico', 'Termogênico'],
-] as const;
+
 
 export default function Cabecalho() {
   const { quantidade, abrir } = useCarrinho();
@@ -44,14 +41,26 @@ export default function Cabecalho() {
         </Suspense>
       </div>
 
-      <nav className="hidden border-t border-tinta-700 lg:block" aria-label="Categorias">
-        <ul className="mx-auto flex max-w-6xl gap-5 px-4 py-2 text-sm">
-          {CATEGORIAS.map(([slug, nome]) => (
-            <li key={slug}>
-              <Link href={`/c/${slug}`} className="transition-colors hover:text-ouro">{nome}</Link>
+      {/* No celular esta faixa era `hidden`: o cliente ficava sem navegacao
+          nenhuma por categoria. Agora ela rola na horizontal em vez de sumir. */}
+      <nav className="relative border-t border-tinta-700" aria-label="Categorias">
+        <ul className="mx-auto flex max-w-6xl gap-4 overflow-x-auto whitespace-nowrap px-4 py-2 text-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {DESTAQUES.map(c => (
+            <li key={c.slug}>
+              <Link href={`/c/${c.slug}`} className="transition-colors hover:text-ouro">{c.curto}</Link>
             </li>
           ))}
+          <li>
+            <Link href="/categorias" className="font-semibold text-ouro hover:underline">
+              Todas as categorias
+            </Link>
+          </li>
         </ul>
+        {/* degrade na borda: sinaliza que ainda tem categoria para o lado */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-tinta to-transparent lg:hidden"
+        />
       </nav>
     </header>
   );

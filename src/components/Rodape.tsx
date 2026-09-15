@@ -1,5 +1,7 @@
 import Logo from './Logo';
+import Link from 'next/link';
 import { linkWhatsapp, MSG_PADRAO } from '@/lib/contato';
+import { CATEGORIAS } from '@/lib/categorias';
 
 export default function Rodape() {
   return (
@@ -31,6 +33,20 @@ export default function Rodape() {
           </ul>
         </div>
       </div>
+
+      {/* Todas as categorias, inclusive as que nao cabem no cabecalho.
+          Serve de navegacao no celular e de mapa do site para o Google. */}
+      <div className="mx-auto max-w-6xl border-t border-tinta-700 px-4 py-8">
+        <h2 className="font-display text-sm font-bold uppercase tracking-wider text-neve">Categorias</h2>
+        <ul className="mt-3 grid grid-cols-2 gap-x-6 gap-y-1.5 text-sm sm:grid-cols-3 lg:grid-cols-4">
+          {CATEGORIAS.map(c => (
+            <li key={c.slug}>
+              <Link href={`/c/${c.slug}`} className="hover:text-ouro">{c.nome}</Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+
       <div className="border-t border-tinta-700 px-4 py-5 text-center text-xs">
         <p>
           Suplementos alimentares não substituem uma alimentação equilibrada.

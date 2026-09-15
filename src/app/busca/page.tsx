@@ -66,7 +66,7 @@ export default async function Busca({
             Perguntar no WhatsApp
           </a>
           <p className="mt-4 text-sm">
-            <Link href="/c/proteina" className="underline hover:text-ouro-700">ver o catálogo</Link>
+            <Link href="/categorias" className="underline hover:text-ouro-700">ver o catálogo</Link>
           </p>
         </div>
       )}

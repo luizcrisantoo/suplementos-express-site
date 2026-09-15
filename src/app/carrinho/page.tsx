@@ -15,7 +15,7 @@ export default function Carrinho() {
     return (
       <div className="mx-auto max-w-2xl px-4 py-20 text-center">
         <h1 className="font-display text-2xl font-extrabold">Seu carrinho está vazio</h1>
-        <Link href="/c/proteina" className="mt-6 inline-block rounded-lg bg-ouro px-6 py-3 font-display font-bold text-tinta">
+        <Link href="/categorias" className="mt-6 inline-block rounded-lg bg-ouro px-6 py-3 font-display font-bold text-tinta">
           Ver o catálogo
         </Link>
       </div>
