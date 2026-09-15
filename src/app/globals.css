@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --tinta: #141413;
+  --ouro: #FFD230;
+  --neve: #FFFFFF;
+}
+
+html { scroll-behavior: smooth; }
+body { background: var(--neve); color: var(--tinta); }
+
+/* Foco visivel sempre. Acessibilidade nao e opcional em loja que recebe pagamento. */
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 3px solid var(--ouro);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+/* numeros alinhados em coluna de preco */
+.tabular { font-variant-numeric: tabular-nums; }
