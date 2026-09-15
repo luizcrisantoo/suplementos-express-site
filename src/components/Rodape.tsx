@@ -1,4 +1,5 @@
 import Logo from './Logo';
+import { linkWhatsapp, MSG_PADRAO } from '@/lib/contato';
 
 export default function Rodape() {
   return (
@@ -21,7 +22,10 @@ export default function Rodape() {
         <div>
           <h2 className="font-display font-bold text-neve text-sm uppercase tracking-wider">Atendimento</h2>
           <ul className="mt-3 space-y-1 text-sm">
-            <li><a href="#" className="hover:text-ouro">WhatsApp</a></li>
+            <li>
+              <a href={linkWhatsapp(MSG_PADRAO)} target="_blank" rel="noopener noreferrer"
+                 className="hover:text-ouro">WhatsApp (81) 99808-0009</a>
+            </li>
             <li><a href="/trocas" className="hover:text-ouro">Trocas e devoluções</a></li>
             <li><a href="/privacidade" className="hover:text-ouro">Privacidade (LGPD)</a></li>
           </ul>

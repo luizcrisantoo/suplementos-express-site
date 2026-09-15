@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { supabaseServidor } from '@/lib/supabase-server';
-import CardProduto, { type ProdutoVitrine } from '@/components/CardProduto';
+import CardProduto from '@/components/CardProduto';
+import { COLUNAS_VITRINE, type ItemVitrine } from '@/lib/produto';
 
 export const revalidate = 300;
 
@@ -33,11 +34,15 @@ export default async function Categoria({ params }: { params: Promise<{ categori
   if (!NOMES[categoria]) notFound();
 
   const sb = await supabaseServidor();
-  const { data } = await sb.from('produto_publico')
-    .select('id,slug,nome,marca,sabor,preco_venda_cents,preco_referencia_cents,foto,disponibilidade')
-    .eq('categoria', categoria).order('preco_venda_cents', { ascending: true }).limit(120);
+  // le a vitrine (uma linha por grupo), nao os SKUs soltos: senao o mesmo whey
+  // ocupa a categoria inteira com 18 sabores.
+  const { data } = await sb.from('vitrine')
+    .select(COLUNAS_VITRINE)
+    .eq('categoria', categoria)
+    .order('preco_venda_cents', { ascending: true })
+    .limit(200);
 
-  const itens = (data ?? []) as ProdutoVitrine[];
+  const itens = (data ?? []) as unknown as ItemVitrine[];
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -45,7 +50,9 @@ export default async function Categoria({ params }: { params: Promise<{ categori
         <a href="/" className="hover:underline">Início</a> <span aria-hidden>/</span> {NOMES[categoria]}
       </nav>
       <h1 className="mt-2 font-display text-3xl font-extrabold">{NOMES[categoria]}</h1>
-      <p className="mt-1 text-sm text-neve-600 tabular">{itens.length} produtos</p>
+      <p className="mt-1 text-sm text-neve-600 tabular">
+        {itens.length} {itens.length === 1 ? 'produto' : 'produtos'}
+      </p>
 
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {itens.map(p => <CardProduto key={p.id} p={p} />)}

@@ -5,6 +5,7 @@ import Cabecalho from '@/components/Cabecalho';
 import Rodape from '@/components/Rodape';
 import { CarrinhoProvider } from '@/components/CarrinhoProvider';
 import GavetaCarrinho from '@/components/GavetaCarrinho';
+import BotaoWhatsApp from '@/components/BotaoWhatsApp';
 
 const display = Archivo({ subsets: ['latin'], weight: ['600','700','800'], variable: '--fonte-display', display: 'swap' });
 const corpo = Source_Sans_3({ subsets: ['latin'], weight: ['400','600'], variable: '--fonte-corpo', display: 'swap' });
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main id="conteudo">{children}</main>
           <GavetaCarrinho />
           <Rodape />
+          <BotaoWhatsApp />
         </CarrinhoProvider>
       </body>
     </html>
