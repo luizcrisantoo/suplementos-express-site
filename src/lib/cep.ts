@@ -7,8 +7,9 @@ import 'server-only';
  */
 export type EnderecoCep = { cep: string; rua: string; bairro: string; cidade: string; uf: string };
 
-const semAcento = (s: string) =>
-  s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+// aceita null: a coluna zona.bairros e text[] e pode conter NULL
+const semAcento = (s: string | null | undefined) =>
+  (s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 
 export async function buscarCep(cep: string): Promise<EnderecoCep | null> {
   const limpo = cep.replace(/\D/g, '');
@@ -30,8 +31,14 @@ export function zonaDoBairro<T extends { bairros: string[]; codigo: string }>(
   zonas: T[], bairro: string, cidade: string,
 ): T | null {
   const b = semAcento(bairro), c = semAcento(cidade);
+  if (!b && !c) return null;
   for (const z of zonas) {
-    if (z.bairros.some(x => semAcento(x) === b)) return z;
+    // `?? []` e `x &&`: a zona Z4 ("fora de area") foi semeada com array[NULL],
+    // entao bairros chega como [null]. Sem isso, qualquer bairro que nao casa
+    // com Z1/Z2/Z3 chegava aqui e derrubava a rota com 500 em vez de dizer
+    // "ainda nao entregamos ai". A migracao 03 conserta o dado; isto protege
+    // o codigo de qualquer NULL que entre na lista de novo.
+    if ((z.bairros ?? []).some(x => x && semAcento(x) === b)) return z;
   }
   // cidades inteiras que caem na Z3
   const z3 = zonas.find(z => z.codigo === 'Z3');

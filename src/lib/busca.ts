@@ -25,21 +25,44 @@ export function palavrasBusca(termo: string): string[] {
 }
 
 /**
- * Relevancia. O banco devolve sem ordem util (LIKE nao ranqueia), entao a
- * ordenacao final sai daqui: nome da linha na frente, depois marca, depois preco.
+ * Relevancia.
+ *
+ * O LIKE do Postgres responde sim/nao, nao ranqueia. Como a busca devolve no
+ * maximo 60 grupos, a ordenacao final sai daqui:
+ *
+ *   1. o termo inteiro no nome da linha (igual > comeca com > contem)
+ *   2. quantas palavras do termo aparecem no nome da linha
+ *   3. quantas aparecem na marca
+ *   4. linha com mais variacoes primeiro (proxy de linha conhecida:
+ *      "Best Whey" com 18 sabores vence um item avulso qualquer)
+ *   5. mais barato primeiro
+ *
+ * Sem o passo 4, procurar "whey chocolate" devolvia o creme de avela mais
+ * barato da loja na frente das linhas de whey de verdade.
  */
-export function ordenarPorRelevancia<T extends { linha: string | null; nome: string; marca: string; preco_venda_cents: number }>(
-  itens: T[], termo: string,
-): T[] {
+export function ordenarPorRelevancia<T extends {
+  linha: string | null; nome: string; marca: string;
+  preco_venda_cents: number; qtd_variacoes?: number;
+}>(itens: T[], termo: string): T[] {
   const t = normalizarBusca(termo);
-  const limpo = (s: string) => normalizarBusca(s);
+  const palavras = palavrasBusca(termo);
+
   const nota = (i: T) => {
-    const linha = limpo(i.linha ?? i.nome);
-    if (linha === t) return 0;
-    if (linha.startsWith(t)) return 1;
-    if (linha.includes(t)) return 2;
-    if (limpo(i.marca).includes(t)) return 3;
-    return 4;
+    const linha = normalizarBusca(i.linha ?? i.nome);
+    const marca = normalizarBusca(i.marca);
+    let n = 0;
+    if (linha === t) n += 1000;
+    else if (linha.startsWith(t)) n += 600;
+    else if (linha.includes(t)) n += 300;
+    for (const p of palavras) {
+      if (linha.includes(p)) n += 40;
+      if (marca.includes(p)) n += 15;
+    }
+    return n;
   };
-  return [...itens].sort((a, b) => nota(a) - nota(b) || a.preco_venda_cents - b.preco_venda_cents);
+
+  return [...itens].sort((a, b) =>
+    nota(b) - nota(a) ||
+    (b.qtd_variacoes ?? 1) - (a.qtd_variacoes ?? 1) ||
+    a.preco_venda_cents - b.preco_venda_cents);
 }
